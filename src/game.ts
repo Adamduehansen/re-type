@@ -1,6 +1,7 @@
 import { makeSprite, t, GameProps } from '@replay/core';
 import { WebInputs, RenderCanvasOptions } from '@replay/web';
 import { iOSInputs } from '@replay/swift';
+import { Menu } from './menu';
 
 export const options: RenderCanvasOptions = {
   dimensions: 'scale-up',
@@ -26,37 +27,61 @@ export const gameProps: GameProps = {
   },
 };
 
+const letters = [
+  'a',
+  'b',
+  'c',
+  'd',
+  'e',
+  'f',
+  'g',
+  'h',
+  'i',
+  'j',
+  'k',
+  'l',
+  'm',
+  'n',
+];
+
+type Screens = 'Menu' | 'Level';
+
 type GameState = {
   loaded: boolean;
+  screen: Screens;
+};
+
+const initialState: GameState = {
+  loaded: false,
+  screen: 'Menu',
 };
 
 export const Game = makeSprite<GameProps, GameState, WebInputs | iOSInputs>({
   init({ updateState, preloadFiles }) {
     preloadFiles({
-      audioFileNames: ['boop.wav'],
-      imageFileNames: ['icon.png'],
+      audioFileNames: [],
+      imageFileNames: [],
     }).then(() => {
       updateState((state) => ({ ...state, loaded: true }));
     });
 
-    return {
-      loaded: false,
-    };
+    return { ...initialState };
   },
 
   loop({ state }) {
     if (!state.loaded) {
       return {
-        loaded: false,
+        ...state,
+      };
+    } else {
+      return {
+        ...state,
+        loaded: true,
       };
     }
-
-    return {
-      loaded: true,
-    };
   },
 
-  render({ state, device }) {
+  render({ state }) {
     if (!state.loaded) {
       return [
         t.text({
@@ -67,10 +92,11 @@ export const Game = makeSprite<GameProps, GameState, WebInputs | iOSInputs>({
     }
 
     return [
-      t.text({
-        color: 'black',
-        text: 'sample',
-      }),
+      state.screen === 'Menu'
+        ? Menu({
+            id: 'Menu',
+          })
+        : null,
     ];
   },
 });
