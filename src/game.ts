@@ -2,6 +2,7 @@ import { makeSprite, t, GameProps } from '@replay/core';
 import { WebInputs, RenderCanvasOptions } from '@replay/web';
 import { iOSInputs } from '@replay/swift';
 import { Menu } from './menu';
+import { Level } from './level';
 
 export const options: RenderCanvasOptions = {
   dimensions: 'scale-up',
@@ -26,23 +27,6 @@ export const gameProps: GameProps = {
     size: 26,
   },
 };
-
-const letters = [
-  'a',
-  'b',
-  'c',
-  'd',
-  'e',
-  'f',
-  'g',
-  'h',
-  'i',
-  'j',
-  'k',
-  'l',
-  'm',
-  'n',
-];
 
 type Screens = 'Menu' | 'Level';
 
@@ -81,7 +65,7 @@ export const Game = makeSprite<GameProps, GameState, WebInputs | iOSInputs>({
     }
   },
 
-  render({ state }) {
+  render({ state, updateState }) {
     if (!state.loaded) {
       return [
         t.text({
@@ -95,6 +79,20 @@ export const Game = makeSprite<GameProps, GameState, WebInputs | iOSInputs>({
       state.screen === 'Menu'
         ? Menu({
             id: 'Menu',
+            startGame: function () {
+              updateState((state) => {
+                return {
+                  ...state,
+                  screen: 'Level',
+                };
+              });
+            },
+          })
+        : null,
+      state.screen === 'Level'
+        ? Level({
+            id: 'Level',
+            goToMenu: function () {},
           })
         : null,
     ];
