@@ -2,6 +2,7 @@ import { testSprite } from '@replay/test';
 import { WebInputs } from '@replay/web';
 import { randomBytes } from 'crypto';
 import { Game, gameProps } from './game';
+import { Level } from './level';
 
 const initialInputs: WebInputs = {
   keysDown: {},
@@ -138,7 +139,151 @@ describe('game', () => {
       nextFrame(); // Wait for new letters to be generated.
 
       // Assert
-      expect(getByText('mq')).toHaveLength(1);
+      expect(getByText('m')).toHaveLength(1);
+      expect(getByText('q')).toHaveLength(1);
+    });
+
+    test('should transit from second level to third level', async () => {
+      // Arrange
+      const {
+        loadFiles,
+        nextFrame,
+        getByText,
+        updateInputs,
+        setRandomNumbers,
+      } = testSprite(Game(gameProps), gameProps, {
+        initInputs: initialInputs,
+      });
+
+      setRandomNumbers([0.43, 0.47, 0.63]);
+
+      // Act
+      await loadFiles();
+      nextFrame();
+      startNewGame(updateInputs, nextFrame);
+      nextFrame();
+
+      updateInputs({
+        ...initialInputs,
+        keysJustPressed: {
+          ['l']: true,
+        },
+      });
+
+      nextFrame(); // Execute key input
+      nextFrame(); // Wait for new letters to be generated.
+
+      updateInputs({
+        ...initialInputs,
+        keysJustPressed: {
+          ['m']: true,
+        },
+      });
+
+      nextFrame(); // Execute key input
+
+      updateInputs({
+        ...initialInputs,
+        keysJustPressed: {
+          ['q']: true,
+        },
+      });
+
+      nextFrame(); // Execute key input
+      nextFrame(); // Wait for new letters to be generated.
+
+      // Assert
+      expect(getByText('l')).toHaveLength(1);
+      expect(getByText('m')).toHaveLength(1);
+      expect(getByText('q')).toHaveLength(1);
+    });
+
+    test('should color entered letter green', async () => {
+      // Arrange
+      const {
+        loadFiles,
+        nextFrame,
+        getByText,
+        updateInputs,
+        setRandomNumbers,
+      } = testSprite(Game(gameProps), gameProps, {
+        initInputs: initialInputs,
+      });
+
+      setRandomNumbers([0.43, 0.47, 0.63]);
+
+      // Act
+      await loadFiles();
+      nextFrame();
+      startNewGame(updateInputs, nextFrame);
+      nextFrame();
+
+      updateInputs({
+        ...initialInputs,
+        keysJustPressed: {
+          ['l']: true,
+        },
+      });
+
+      nextFrame(); // Execute key input
+      nextFrame(); // Wait for new letters to be generated.
+
+      updateInputs({
+        ...initialInputs,
+        keysJustPressed: {
+          ['m']: true,
+        },
+      });
+
+      nextFrame(); // Execute key input
+
+      // Assert
+      expect(getByText('m')[0].props.color).toEqual('green');
+    });
+
+    test('should only color first letter of multiple of same', async () => {
+      // Arrange
+      const {
+        loadFiles,
+        nextFrame,
+        getByText,
+        updateInputs,
+        setRandomNumbers,
+      } = testSprite(Game(gameProps), gameProps, {
+        initInputs: initialInputs,
+      });
+
+      setRandomNumbers([0.43, 0.43, 0.43]);
+
+      // Act
+      await loadFiles();
+      nextFrame();
+      startNewGame(updateInputs, nextFrame);
+      nextFrame();
+
+      updateInputs({
+        ...initialInputs,
+        keysJustPressed: {
+          ['l']: true,
+        },
+      });
+
+      nextFrame(); // Execute key input
+      nextFrame(); // Wait for new letters to be generated.
+
+      updateInputs({
+        ...initialInputs,
+        keysJustPressed: {
+          ['l']: true,
+        },
+      });
+
+      nextFrame(); // Execute key input
+
+      // Assert
+      expect(
+        getByText('l').filter((texture) => texture.props.color === 'green')
+      ).toHaveLength(1);
     });
   });
 });

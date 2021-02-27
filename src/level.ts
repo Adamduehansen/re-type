@@ -36,43 +36,62 @@ interface Props {
 
 interface State {
   length: number;
-  lettersToWrite: { [x: string]: boolean };
+  lettersToWrite: {
+    letter: string;
+    entered: boolean;
+  }[];
 }
 
 export const Level = makeSprite<Props, State, WebInputs>({
   init: function ({ device }) {
     return {
       length: 1,
-      lettersToWrite: {
-        [letters[Math.floor(device.random() * letters.length)]]: false,
-      },
+      lettersToWrite: [
+        {
+          entered: false,
+          letter: letters[Math.floor(device.random() * letters.length)],
+        },
+      ],
     };
   },
   loop: function ({ state, device }) {
     let { lettersToWrite, length } = state;
 
-    if (Object.values(lettersToWrite).every(Boolean)) {
+    if (Object.values(lettersToWrite).every((letter) => letter.entered)) {
       length += 1;
-      const nextLetters = Array.from(
-        {
-          length: length,
-        },
-        () => {
-          return [letters[Math.floor(device.random() * letters.length)], false];
-        }
-      );
-
       return {
         length: length,
-        lettersToWrite: Object.fromEntries(nextLetters),
+        lettersToWrite: Array.from(
+          {
+            length: length,
+          },
+          () => {
+            return {
+              entered: false,
+              letter: letters[Math.floor(device.random() * letters.length)],
+            };
+          }
+        ),
       };
     } else {
-      const nextLetterToType = Object.entries(lettersToWrite).map(
-        (letter) => letter[0]
-      )[0];
+      const nextLetterToType = lettersToWrite
+        .filter((letter) => !letter.entered)
+        .map((letter) => letter.letter)[0];
 
       if (device.inputs.keysJustPressed[nextLetterToType]) {
-        lettersToWrite = { ...lettersToWrite, [nextLetterToType]: true };
+        const indexOfLetter = lettersToWrite.findIndex(
+          (letter) => letter.letter === nextLetterToType && !letter.entered
+        );
+        lettersToWrite = lettersToWrite.map((letterToWrite, index) => {
+          if (index !== indexOfLetter) {
+            return letterToWrite;
+          } else {
+            return {
+              ...letterToWrite,
+              entered: true,
+            };
+          }
+        });
       }
 
       return {
@@ -81,11 +100,22 @@ export const Level = makeSprite<Props, State, WebInputs>({
       };
     }
   },
-  render: function ({ state }) {
+  render: function ({ state, device }) {
     return [
+      ...state.lettersToWrite.map((letterToWrite, index) => {
+        return t.text({
+          text: letterToWrite.letter,
+          color: letterToWrite.entered ? 'green' : 'black',
+          x: -7.5 * state.lettersToWrite.length + 15 * index,
+          align: 'left',
+        });
+      }),
       t.text({
-        text: Object.keys(state.lettersToWrite).join(''),
+        text: state.length.toString(),
         color: 'black',
+        align: 'left',
+        x: -device.size.width / 2,
+        y: device.size.height / 2 - 20,
       }),
     ];
   },
