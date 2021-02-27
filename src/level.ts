@@ -30,45 +30,61 @@ const letters = [
   'z',
 ];
 
-interface Letter {
-  letter: string;
-  entered: boolean;
-}
-
 interface Props {
   goToMenu: () => void;
 }
 
 interface State {
-  lettersToWrite: Letter[];
+  length: number;
+  lettersToWrite: { [x: string]: boolean };
 }
 
 export const Level = makeSprite<Props, State, WebInputs>({
-  init: function () {
+  init: function ({ device }) {
     return {
-      lettersToWrite: [],
+      length: 1,
+      lettersToWrite: {
+        [letters[Math.floor(device.random() * letters.length)]]: false,
+      },
     };
   },
   loop: function ({ state, device }) {
-    let { lettersToWrite } = state;
+    let { lettersToWrite, length } = state;
 
-    if (lettersToWrite.length === 0) {
-      lettersToWrite = [
+    if (Object.values(lettersToWrite).every(Boolean)) {
+      length += 1;
+      const nextLetters = Array.from(
         {
-          entered: false,
-          letter: letters[Math.floor(device.random() * letters.length)],
+          length: length,
         },
-      ];
-    }
+        () => {
+          return [letters[Math.floor(device.random() * letters.length)], false];
+        }
+      );
 
-    return {
-      lettersToWrite: lettersToWrite,
-    };
+      return {
+        length: length,
+        lettersToWrite: Object.fromEntries(nextLetters),
+      };
+    } else {
+      const nextLetterToType = Object.entries(lettersToWrite).map(
+        (letter) => letter[0]
+      )[0];
+
+      if (device.inputs.keysJustPressed[nextLetterToType]) {
+        lettersToWrite = { ...lettersToWrite, [nextLetterToType]: true };
+      }
+
+      return {
+        length: length,
+        lettersToWrite: lettersToWrite,
+      };
+    }
   },
   render: function ({ state }) {
     return [
       t.text({
-        text: state.lettersToWrite.map(({ letter }) => letter).join(),
+        text: Object.keys(state.lettersToWrite).join(''),
         color: 'black',
       }),
     ];

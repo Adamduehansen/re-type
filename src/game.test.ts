@@ -1,5 +1,6 @@
 import { testSprite } from '@replay/test';
 import { WebInputs } from '@replay/web';
+import { randomBytes } from 'crypto';
 import { Game, gameProps } from './game';
 
 const initialInputs: WebInputs = {
@@ -101,11 +102,43 @@ describe('game', () => {
         startNewGame(updateInputs, nextFrame);
         nextFrame();
 
-        const text = getByText(letter);
-
         // Assert
-        expect(text).toHaveLength(1);
+        expect(getByText(letter)).toHaveLength(1);
       }
     );
+
+    test('should transit from first level to next level', async () => {
+      // Arrange
+      const {
+        loadFiles,
+        nextFrame,
+        getByText,
+        updateInputs,
+        setRandomNumbers,
+      } = testSprite(Game(gameProps), gameProps, {
+        initInputs: initialInputs,
+      });
+
+      setRandomNumbers([0.43, 0.47, 0.63]);
+
+      // Act
+      await loadFiles();
+      nextFrame();
+      startNewGame(updateInputs, nextFrame);
+      nextFrame();
+
+      updateInputs({
+        ...initialInputs,
+        keysJustPressed: {
+          ['l']: true,
+        },
+      });
+
+      nextFrame(); // Wait for key input.
+      nextFrame(); // Wait for new letters to be generated.
+
+      // Assert
+      expect(getByText('mq')).toHaveLength(1);
+    });
   });
 });
