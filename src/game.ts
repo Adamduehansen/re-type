@@ -92,7 +92,14 @@ export const Game = makeSprite<GameProps, GameState, WebInputs | iOSInputs>({
       state.screen === 'Level'
         ? Level({
             id: 'Level',
-            goToMenu: function () {},
+            goToMenu: function () {
+              updateState((state) => {
+                return {
+                  ...state,
+                  screen: 'Menu',
+                };
+              });
+            },
           })
         : null,
     ];

@@ -54,7 +54,7 @@ export const Level = makeSprite<Props, State, WebInputs>({
       ],
     };
   },
-  loop: function ({ state, device }) {
+  loop: function ({ state, props, device }) {
     let { lettersToWrite, length } = state;
 
     if (Object.values(lettersToWrite).every((letter) => letter.entered)) {
@@ -92,6 +92,11 @@ export const Level = makeSprite<Props, State, WebInputs>({
             };
           }
         });
+      } else if (
+        Object.keys(device.inputs.keysJustPressed).length > 0 &&
+        !device.inputs.keysJustPressed[' ']
+      ) {
+        props.goToMenu();
       }
 
       return {

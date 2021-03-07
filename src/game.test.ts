@@ -285,5 +285,57 @@ describe('game', () => {
         getByText('l').filter((texture) => texture.props.color === 'green')
       ).toHaveLength(1);
     });
+
+    test('should do not trigger goToMenu prop when no keys are pressed', async () => {
+      // Arrange
+      const mockGameOver = jest.fn();
+      const { nextFrame, updateInputs, setRandomNumbers } = testSprite(
+        Level({
+          goToMenu: mockGameOver,
+          id: 'Level',
+        }),
+        gameProps,
+        {
+          initInputs: initialInputs,
+        }
+      );
+
+      setRandomNumbers([0.43]);
+
+      // Act
+
+      updateInputs({
+        ...initialInputs,
+        keysJustPressed: {
+          ['e']: true,
+        },
+      });
+      nextFrame();
+
+      // Assert
+      expect(mockGameOver).toBeCalledTimes(1);
+    });
+
+    test('should game over when player pressed the wrong letter', async () => {
+      const mockGameOver = jest.fn();
+      const { nextFrame, setRandomNumbers } = testSprite(
+        Level({
+          goToMenu: mockGameOver,
+          id: 'Level',
+        }),
+        gameProps,
+        {
+          initInputs: initialInputs,
+        }
+      );
+
+      setRandomNumbers([0.43]);
+
+      // Act
+      nextFrame();
+
+      // Assert
+      expect(mockGameOver).not.toBeCalledTimes(1);
+    });
   });
 });
