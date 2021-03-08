@@ -33,11 +33,13 @@ type Screens = 'Menu' | 'Level';
 type GameState = {
   loaded: boolean;
   screen: Screens;
+  highScore: number;
 };
 
 const initialState: GameState = {
   loaded: false,
   screen: 'Menu',
+  highScore: 0,
 };
 
 export const Game = makeSprite<GameProps, GameState, WebInputs | iOSInputs>({
@@ -87,15 +89,17 @@ export const Game = makeSprite<GameProps, GameState, WebInputs | iOSInputs>({
                 };
               });
             },
+            highScore: state.highScore,
           })
         : null,
       state.screen === 'Level'
         ? Level({
             id: 'Level',
-            goToMenu: function () {
+            goToMenu: function (score) {
               updateState((state) => {
                 return {
                   ...state,
+                  highScore: score > state.highScore ? score : state.highScore,
                   screen: 'Menu',
                 };
               });

@@ -31,7 +31,7 @@ const letters = [
 ];
 
 interface Props {
-  goToMenu: () => void;
+  goToMenu: (score: number) => void;
 }
 
 interface State {
@@ -40,7 +40,11 @@ interface State {
     letter: string;
     entered: boolean;
   }[];
+  totalScore: number;
+  currentScore: number;
 }
+
+const INITIAL_CURRENT_SCORE = 500;
 
 export const Level = makeSprite<Props, State, WebInputs>({
   init: function ({ device }) {
@@ -52,13 +56,21 @@ export const Level = makeSprite<Props, State, WebInputs>({
           letter: letters[Math.floor(device.random() * letters.length)],
         },
       ],
+      currentScore: INITIAL_CURRENT_SCORE,
+      totalScore: 0,
     };
   },
   loop: function ({ state, props, device }) {
-    let { lettersToWrite, length } = state;
+    let { lettersToWrite, length, currentScore, totalScore } = state;
+
+    if (currentScore <= 0) {
+      props.goToMenu(state.totalScore);
+      return { ...state };
+    }
 
     if (Object.values(lettersToWrite).every((letter) => letter.entered)) {
       length += 1;
+      totalScore += currentScore;
       return {
         length: length,
         lettersToWrite: Array.from(
@@ -72,6 +84,8 @@ export const Level = makeSprite<Props, State, WebInputs>({
             };
           }
         ),
+        totalScore: totalScore,
+        currentScore: INITIAL_CURRENT_SCORE,
       };
     } else {
       const nextLetterToType = lettersToWrite
@@ -96,12 +110,16 @@ export const Level = makeSprite<Props, State, WebInputs>({
         Object.keys(device.inputs.keysJustPressed).length > 0 &&
         !device.inputs.keysJustPressed[' ']
       ) {
-        props.goToMenu();
+        props.goToMenu(state.totalScore);
       }
+
+      currentScore -= 1;
 
       return {
         length: length,
         lettersToWrite: lettersToWrite,
+        currentScore: currentScore,
+        totalScore: totalScore,
       };
     }
   },
@@ -116,11 +134,22 @@ export const Level = makeSprite<Props, State, WebInputs>({
         });
       }),
       t.text({
-        text: state.length.toString(),
+        text: state.totalScore.toString(),
         color: 'black',
         align: 'left',
         x: -device.size.width / 2,
         y: device.size.height / 2 - 20,
+        scaleX: 0.5,
+        scaleY: 0.5,
+      }),
+      t.text({
+        text: state.currentScore.toString(),
+        color: 'black',
+        align: 'left',
+        x: -device.size.width / 2,
+        y: device.size.height / 2 - 40,
+        scaleX: 0.5,
+        scaleY: 0.5,
       }),
     ];
   },

@@ -1,6 +1,5 @@
 import { testSprite } from '@replay/test';
 import { WebInputs } from '@replay/web';
-import { randomBytes } from 'crypto';
 import { Game, gameProps } from './game';
 import { Level } from './level';
 
