@@ -44,7 +44,7 @@ interface State {
   currentScore: number;
 }
 
-const INITIAL_CURRENT_SCORE = 500;
+const INITIAL_CURRENT_SCORE = 200;
 
 export const Level = makeSprite<Props, State, WebInputs>({
   init: function ({ device }) {
@@ -106,6 +106,10 @@ export const Level = makeSprite<Props, State, WebInputs>({
             };
           }
         });
+        currentScore += 50;
+        if (currentScore > INITIAL_CURRENT_SCORE) {
+          currentScore = INITIAL_CURRENT_SCORE;
+        }
       } else if (
         Object.keys(device.inputs.keysJustPressed).length > 0 &&
         !device.inputs.keysJustPressed[' ']
@@ -132,6 +136,15 @@ export const Level = makeSprite<Props, State, WebInputs>({
           x: -7.5 * state.lettersToWrite.length + 15 * index,
           align: 'left',
         });
+      }),
+      t.rectangle({
+        color: 'black',
+        height: 10,
+        width: device.size.width,
+        anchorX: -device.size.width / 2,
+        x: -device.size.width / 2,
+        scaleX: state.currentScore / INITIAL_CURRENT_SCORE,
+        y: -device.size.height / 2,
       }),
       t.text({
         text: state.totalScore.toString(),
